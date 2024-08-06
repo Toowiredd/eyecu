@@ -1,0 +1,68 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Image {
+  createdAt        DateTime         @default(now())
+  detectedObject   DetectedObject?  @relation(name: "DetectedObjectOnImages", fields: [detectedObjectId], references: [id])
+  detectedObjectId String?
+  detectedObjects  DetectedObject[] @relation(name: "DetectedObjectsOnImage")
+  id               String           @id @default(cuid())
+  objectCounts     ObjectCount[]
+  updatedAt        DateTime         @updatedAt
+  url              String?
+}
+
+model DetectedObject {
+  boundingBox     Json?
+  confidenceScore Float?
+  createdAt       DateTime @default(now())
+  id              String   @id @default(cuid())
+  image           Image?   @relation(name: "DetectedObjectsOnImage", fields: [imageId], references: [id])
+  imageId         String?
+  images          Image[]  @relation(name: "DetectedObjectOnImages")
+  name            String?
+  updatedAt       DateTime @updatedAt
+}
+
+model ObjectCount {
+  count      Int?
+  createdAt  DateTime @default(now())
+  id         String   @id @default(cuid())
+  image      Image?   @relation(fields: [imageId], references: [id])
+  imageId    String?
+  objectName String?
+  updatedAt  DateTime @updatedAt
+}
+
+model Detection {
+  createdAt DateTime  @default(now())
+  id        String    @id @default(cuid())
+  object    Object?   @relation(fields: [objectId], references: [id])
+  objectId  String?
+  timestamp DateTime?
+  updatedAt DateTime  @updatedAt
+}
+
+model Object {
+  counts     Count[]
+  createdAt  DateTime    @default(now())
+  detections Detection[]
+  id         String      @id @default(cuid())
+  name       String?
+  updatedAt  DateTime    @updatedAt
+}
+
+model Count {
+  count     Int?
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  object    Object?  @relation(fields: [objectId], references: [id])
+  objectId  String?
+  updatedAt DateTime @updatedAt
+}
